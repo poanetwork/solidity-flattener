@@ -1,0 +1,28 @@
+{
+  "name": "oracles-combine-solidity",
+  "version": "1.0.0",
+  "description": "Combine solidity files to one flat file",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oraclesorg/oracles-combine-solidity"
+  },
+  "keywords": [],
+  "author": "oraclesorg",
+  "license": "MIT",
+  "homepage": "https://oracles.org/",
+  "dependencies": {
+    "glob": "^7.1.2",
+    "path": "^0.12.7"
+  },
+  "engines": {
+    "node": "6.10.1"
+  },
+  "bugs": {
+    "url": "https://github.com/oraclesorg/oracles-combine-solidity"
+  },
+  "main": "index.js",
+  "devDependencies": {}
+}
