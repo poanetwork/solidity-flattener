@@ -2,11 +2,6 @@
 
 ##### Combines all local imports to one .sol file for any project's structure
 
-##### Limitations: 
-
-1. All dependencies are locally in project
-2. Only imports like `import "filepath";` are supported
-
 ```
 git clone https://gitlab.com/blocknotary/oracles-combine-solidity
 cd oracles-combine-solidity
