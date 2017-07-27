@@ -1,6 +1,6 @@
 const fs = require('fs');
 const glob = require("glob");
-const path = require("path");
+const pathLib = require("path");
 const variables = require("./helpers/variables.js");
 const removeDoubledSolidityVersion = require("./helpers/remove-doubled-solidity-version.js");
 const replaceAllImportsRecursively = require("./helpers/replace-all-imports-recursively.js");
@@ -27,7 +27,7 @@ function getAllSolFilesCallBack(inputFileContent, dir, path, srcFiles) {
 		replaceAllImportsRecursively(inputFileContent, dir, function(outputFileContent) {
 			outputFileContent = removeDoubledSolidityVersion(outputFileContent);
 			if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir);
-			fs.writeFileSync(variables.outDir + "/flatContract.sol", outputFileContent);
+			fs.writeFileSync(variables.outDir + "/" + pathLib.basename(variables.inputFilePath, ".sol") + "_flat.sol", outputFileContent);
 			console.log("Success! Flat file is generated to " + variables.outDir + " directory");
 		});
 	});
