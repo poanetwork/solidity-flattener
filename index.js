@@ -24,7 +24,7 @@ function generateFlatFile(dir, path, inputFileContent) {
 
 function getAllSolFilesCallBack(inputFileContent, dir, path, srcFiles) {
 	addLibraries(variables.parentDir, inputFileContent, variables.allSrcFiles, function(intermediateFileContent) {
-		replaceAllImportsRecursively(inputFileContent, dir, function(outputFileContent) {
+		replaceAllImportsRecursively(intermediateFileContent, dir, function(outputFileContent) {
 			outputFileContent = removeDoubledSolidityVersion(outputFileContent);
 			if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir);
 			fs.writeFileSync(variables.outDir + "/" + pathLib.basename(variables.inputFilePath, ".sol") + "_flat.sol", outputFileContent);
