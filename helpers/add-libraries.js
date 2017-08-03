@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const glob = require("glob");
 const variables = require("./variables.js");
 const findUsingLibraryFor = require("./find-libraries-usage.js");
@@ -14,8 +15,8 @@ function addLibraries(parentDir, inputFileContent, srcFiles, cb) {
 				if (fileContent.indexOf("library " + usingLibraryName) > -1) {
 					if (variables.importedSrcFiles.indexOf(srcFiles[j]) === -1) {
 						updatedFileContent = fileContent + updatedFileContent;
+						variables.importedSrcFiles.push(path.basename(srcFiles[j]));
 						srcFiles.splice(j,1);
-						variables.importedSrcFiles.push(srcFiles[j]);
 						usingLibrariesFound++;
 					}
 					break;
