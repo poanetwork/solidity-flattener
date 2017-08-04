@@ -3,7 +3,7 @@
 ##### Combines all local imports to one .sol file for any project's structure
 
 ```
-git clone https://gitlab.com/blocknotary/oracles-combine-solidity
+git clone https://github.com/oraclesorg/oracles-combine-solidity
 cd oracles-combine-solidity
 npm install
 ```
