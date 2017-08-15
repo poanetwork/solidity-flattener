@@ -22,8 +22,6 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 			var importedFileContent = fs.readFileSync(dir + importObj.dependencyPath, "utf8");
 			replaceRelativeImportPaths(importedFileContent, path.dirname(importObj.dependencyPath) + "/", function(importedFileContentUpdated) {
 				if (!variables.importedSrcFiles.hasOwnProperty(path.basename(dir + importObj.dependencyPath))) {
-					console.log(variables.importedSrcFiles);
-					console.log(path.basename(dir + importObj.dependencyPath));
 					variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)] = importedFileContentUpdated;
 					updatedFileContent = updatedFileContent.replace(importStatement, importedFileContentUpdated);
 				}
