@@ -17,7 +17,7 @@ let parentDir = inputFileDir;
 let outDir = args.length > 1?args[1]:config?config.outputDir:"./out";
 
 let allSrcFiles = [];
-let importedSrcFiles = [];
+let importedSrcFiles = {};
 
 
 module.exports = {

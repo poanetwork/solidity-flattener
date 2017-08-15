@@ -32,14 +32,14 @@ function findAllImportPaths(dir, content, cb) {
 				importsIterator++;
 				let fileContent = fs.readFileSync(dependencyPath, "utf8");
 				if (fileContent.indexOf("contract ") > -1) {
-					importObj.contractName = fileContent.substring((fileContent.indexOf("contract ") + ("contract ").length), fileContent.indexOf("{")).replace(/\s/g,'');
+					importObj.contractName = getContractName(fileContent);
 				}
 				allImports.push(importObj);
 			} else {
 				findFile.byName(dir.substring(0, dir.lastIndexOf("/")), path.basename(dependencyPath), function(fileContent) {
 					importsIterator++;
 					if (fileContent.indexOf("contract ") > -1) {
-						importObj.contractName = fileContent.substring((fileContent.indexOf("contract ") + ("contract ").length), fileContent.indexOf("{")).replace(/\s/g,'');
+						importObj.contractName = getContractName(fileContent);
 					}
 					allImports.push(importObj);
 
@@ -52,6 +52,10 @@ function findAllImportPaths(dir, content, cb) {
 		}
 	}
 	if (importsIterator == importsCount) cb(allImports);
+}
+
+function getContractName(fileContent) {
+	return fileContent.substring((fileContent.indexOf("contract ") + ("contract ").length), fileContent.indexOf("{")).replace(/\s/g,'')
 }
 
 module.exports = findAllImportPaths;

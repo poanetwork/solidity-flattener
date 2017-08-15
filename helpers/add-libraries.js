@@ -13,9 +13,9 @@ function addLibraries(parentDir, inputFileContent, srcFiles, cb) {
 			for (let j = 0; j < srcFiles.length; j++) {
 				let fileContent = fs.readFileSync(srcFiles[j], "utf8");
 				if (fileContent.indexOf("library " + usingLibraryName) > -1) {
-					if (variables.importedSrcFiles.indexOf(srcFiles[j]) === -1) {
+					if (!variables.importedSrcFiles.hasOwnProperty(srcFiles[j])) {
 						updatedFileContent = fileContent + updatedFileContent;
-						variables.importedSrcFiles.push(path.basename(srcFiles[j]));
+						variables.importedSrcFiles[path.basename(srcFiles[j])] = fileContent;
 						srcFiles.splice(j,1);
 						usingLibrariesFound++;
 					}
