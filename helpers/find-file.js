@@ -27,10 +27,10 @@ function byNameAndReplace(dir, fileName, updatedFileContent, importStatement, cb
 		var importIsReplacedBefore = false;
 		for (var j = 0; j < srcFiles.length; j++) {
 			if (path.basename(srcFiles[j]) == fileName) {
-				if (variables.importedSrcFiles.indexOf(srcFiles[j]) === -1) {
+				if (!variables.importedSrcFiles.hasOwnProperty(srcFiles[j])) {
 					var fileContent = fs.readFileSync(srcFiles[j], "utf8");
 					updatedFileContent = updatedFileContent.replace(importStatement, fileContent);
-					variables.importedSrcFiles.push(srcFiles[j]);
+					variables.importedSrcFiles[srcFiles[j]] = fileContent;
 					cb(updatedFileContent);
 					return;
 				} else {
