@@ -29,7 +29,7 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 				}
 				else {
 					updatedFileContent = updatedFileContent.replace(importStatement, "");
-					//todo
+					//todo: issue #1.
 					if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)] > -1)
 						&& updatedFileContent.indexOf("import ") == -1) {
 						updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)], "");
