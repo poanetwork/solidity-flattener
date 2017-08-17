@@ -1,6 +1,8 @@
 ## Solidity flat file generation
 
-##### Combines all local imports to one .sol file for any project's structure
+##### Combines all local imports to one .sol file
+
+
 
 ```
 git clone https://github.com/oraclesorg/oracles-combine-solidity
@@ -29,6 +31,8 @@ Success! Flat file is generated to ./out directory
 ```
 
 `./flatContract.sol` - flat .sol file is created in output directory (`./out/` by default)
+
+**Note:** *utility won't work with aliases at import statements*
 
 ## Config
 
