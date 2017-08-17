@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "oracles-contract-validator/ValidatorClass.sol" as ValidatorClass2;
+import "oracles-contract-validator/ValidatorClass.sol";
 import "./KeysManager.sol";
 
 contract ValidatorsManager is ValidatorClass, KeysManager {
@@ -26,7 +26,7 @@ contract ValidatorsManager is ValidatorClass, KeysManager {
     ) {
         if (!checkVotingKeyValidity(msg.sender) && !checkInitialKey(msg.sender)) throw;
         if (licensesIssued == licensesLimit) throw;
-        validator[miningKey] = ValidatorClass2.Validator({
+        validator[miningKey] = ValidatorClass.Validator({
             fullName: fullName, 
             streetName: streetName, 
             state: state, 
