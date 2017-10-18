@@ -47,7 +47,14 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 		} else {
 			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(dir + importObj.dependencyPath))) {
 				console.log("!!!" + importObj.dependencyPath + " SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!");
-				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf("/")), path.basename(importObj.dependencyPath), updatedFileContent, importStatement, function(_updatedFileContent) {
+				
+				if (process.platform == "win32") {
+					var directorySeperator = "\\";
+				} else {
+					directorySeperator = "/";
+				}
+				
+				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), path.basename(importObj.dependencyPath), updatedFileContent, importStatement, function(_updatedFileContent) {
 					i++;
 					console.log("###" + importObj.dependencyPath + " SOURCE FILE FOUND###");
 					replaceAllImportsInCurrentLayer(i, importObjs, _updatedFileContent, dir, cb);
