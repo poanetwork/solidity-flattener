@@ -52,7 +52,7 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 				if (process.platform === "win32") {
 					directorySeperator = "\\";
 				} else {
-					 directorySeperator = "/";
+					directorySeperator = "/";
 				}
 				
 				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), path.basename(importObj.dependencyPath), updatedFileContent, importStatement, function(_updatedFileContent) {
