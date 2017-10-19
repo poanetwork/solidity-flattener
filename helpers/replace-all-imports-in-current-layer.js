@@ -48,10 +48,11 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(dir + importObj.dependencyPath))) {
 				console.log("!!!" + importObj.dependencyPath + " SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!");
 				
-				if (process.platform == "win32") {
-					var directorySeperator = "\\";
+				var directorySeperator;
+				if (process.platform === "win32") {
+					directorySeperator = "\\";
 				} else {
-					directorySeperator = "/";
+					 directorySeperator = "/";
 				}
 				
 				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), path.basename(importObj.dependencyPath), updatedFileContent, importStatement, function(_updatedFileContent) {
