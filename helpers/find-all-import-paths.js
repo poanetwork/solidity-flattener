@@ -3,6 +3,9 @@ const path = require('path');
 const findFile = require("./find-file.js");
 
 function findAllImportPaths(dir, content, cb) {
+	//strip comments from content
+	let commentRegex = new RegExp("\/\/.*", "gi")
+	content = content.replace(commentRegex, '');
 	const subStr = "import ";
 	let allImports = [];
 	let regex = new RegExp(subStr,"gi");
