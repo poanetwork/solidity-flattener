@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+var decomment = require('decomment');
 const findFile = require("./find-file.js");
 
 function findAllImportPaths(dir, content, cb) {
-	//strip comments from content
-	let commentRegex = new RegExp("\/\/.*", "gi");
-	content = content.replace(commentRegex, "");
+  //strip comments from content
+	content = decomment(content, {safe: true})
 	const subStr = "import ";
 	let allImports = [];
 	let regex = new RegExp(subStr,"gi");
