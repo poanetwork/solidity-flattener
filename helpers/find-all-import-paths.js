@@ -4,6 +4,7 @@ var decomment = require('decomment');
 const findFile = require("./find-file.js");
 
 function findAllImportPaths(dir, content, cb) {
+  //strip comments from content
 	content = decomment(content, {safe: true})
 	const subStr = "import ";
 	let allImports = [];
