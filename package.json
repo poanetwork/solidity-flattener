@@ -5,9 +5,6 @@
   "scripts": {
     "start": "node index.js"
   },
-  "bin": {
-    "oracles-combine-solidity": "index.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oraclesorg/oracles-combine-solidity"
