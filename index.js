@@ -5,7 +5,6 @@ const pathLib = require("path");
 const variables = require("./helpers/variables.js");
 const removeDoubledSolidityVersion = require("./helpers/remove-doubled-solidity-version.js");
 const replaceAllImportsRecursively = require("./helpers/replace-all-imports-recursively.js");
-const addLibraries = require("./helpers/add-libraries.js"); 
 
 fs.readFile(variables.inputFilePath, "utf8", readInputFileCallBack);
 

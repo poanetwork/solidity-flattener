@@ -1,4 +1,4 @@
-const removeTabs = require("./remove-tabs.js");
+//const removeTabs = require("./remove-tabs.js");
 
 function removeDoubledSolidityVersion(content) {
 	const subStr = "pragma solidity";
@@ -16,7 +16,7 @@ function removeDoubledSolidityVersion(content) {
 	}
 	let finalContent = content.substr(0, lastIndex) + contentFiltered;
 	
-	return removeTabs(finalContent);
+	return finalContent;//removeTabs(finalContent);  //#10
 }
 
 module.exports = removeDoubledSolidityVersion;
