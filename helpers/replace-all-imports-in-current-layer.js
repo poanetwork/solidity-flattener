@@ -15,15 +15,25 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 			updatedFileContent = updatedFileContent.replace(importObj.alias + ".", importObj.contractName + ".");
 		}
 		
-		var importStatement = updatedFileContent.substring(importObj.startIndex, importObj.endIndex);
+		let importStatement = updatedFileContent.substring(importObj.startIndex, importObj.endIndex);
 
-		var fileExists = fs.existsSync(dir + importObj.dependencyPath, fs.F_OK);
+		let fileExists
+		let filePath
+		let isRelativePath = importObj.dependencyPath.indexOf(".") == 0
+		if (isRelativePath) {
+			filePath = dir + importObj.dependencyPath
+			fileExists = fs.existsSync(filePath, fs.F_OK);
+		}
+		else {
+			filePath = importObj.dependencyPath
+			fileExists = fs.existsSync(filePath, fs.F_OK);
+		}
 		if (fileExists) {
 			console.log("###" + importObj.dependencyPath + " SOURCE FILE FOUND###");
-			var importedFileContent = fs.readFileSync(dir + importObj.dependencyPath, "utf8");
+			var importedFileContent = fs.readFileSync(filePath, "utf8");
 			replaceRelativeImportPaths(importedFileContent, path.dirname(importObj.dependencyPath) + "/", function(importedFileContentUpdated) {
-				if (!variables.importedSrcFiles.hasOwnProperty(path.basename(dir + importObj.dependencyPath))) {
-					variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)] = importedFileContentUpdated;
+				if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
+					variables.importedSrcFiles[path.basename(filePath)] = importedFileContentUpdated;
 					if (importedFileContentUpdated.indexOf(" is ") > -1) {
 						updatedFileContent = updatedFileContent.replace(importStatement, importedFileContentUpdated);
 					} else {
@@ -34,9 +44,9 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 				else {
 					updatedFileContent = updatedFileContent.replace(importStatement, "");
 					//issue #1.
-					if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)] > -1)
+					if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(filePath)] > -1)
 						&& updatedFileContent.indexOf("import ") == -1) {
-						updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)], "");
+						updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(filePath)], "");
 						updatedFileContent = importedFileContentUpdated + updatedFileContent;
 					}
 				}
@@ -45,7 +55,7 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 				replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir, cb);
 			});
 		} else {
-			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(dir + importObj.dependencyPath))) {
+			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
 				console.log("!!!" + importObj.dependencyPath + " SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!");
 				
 				var directorySeperator;
@@ -55,7 +65,7 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 					directorySeperator = "/";
 				}
 				
-				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), path.basename(importObj.dependencyPath), updatedFileContent, importStatement, function(_updatedFileContent) {
+				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), importObj.dependencyPath, updatedFileContent, importStatement, function(_updatedFileContent) {
 					i++;
 					console.log("###" + importObj.dependencyPath + " SOURCE FILE FOUND###");
 					replaceAllImportsInCurrentLayer(i, importObjs, _updatedFileContent, dir, cb);
