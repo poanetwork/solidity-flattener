@@ -24,12 +24,10 @@ function generateFlatFile(dir, path, inputFileContent) {
 }
 
 function getAllSolFilesCallBack(inputFileContent, dir, path, srcFiles) {
-	//addLibraries(variables.parentDir, inputFileContent, variables.allSrcFiles, function(intermediateFileContent) {
-		replaceAllImportsRecursively(inputFileContent, dir, function(outputFileContent) {
-			outputFileContent = removeDoubledSolidityVersion(outputFileContent);
-			if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir);
-			fs.writeFileSync(variables.outDir + "/" + variables.flatContractPrefix + "_flat.sol", outputFileContent);
-			console.log("Success! Flat file is generated to " + variables.outDir + " directory");
-		});
-	//});
+	replaceAllImportsRecursively(inputFileContent, dir, function(outputFileContent) {
+		outputFileContent = removeDoubledSolidityVersion(outputFileContent);
+		if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir);
+		fs.writeFileSync(variables.outDir + "/" + variables.flatContractPrefix + "_flat.sol", outputFileContent);
+		console.log("Success! Flat file is generated to " + variables.outDir + " directory");
+	});
 }

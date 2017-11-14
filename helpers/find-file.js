@@ -45,7 +45,7 @@ function byNameAndReplace(dir, filePath, updatedFileContent, importStatement, cb
 function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner) {
 	if (j >= srcFiles.length) return cbInner()
 	const findAllImportPaths = require("./find-all-import-paths.js");
-	let isAbsolutePath = filePath.indexOf(".") != 0		
+	let isAbsolutePath = filePath.indexOf(".") != 0
 	if (isAbsolutePath && srcFiles[j].indexOf(filePath) > -1) {
 
 		if (!variables.importedSrcFiles.hasOwnProperty(path.basename(srcFiles[j]))
@@ -57,10 +57,13 @@ function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePat
 			findAllImportPaths(dir, fileContent, function(_importObjs) {
 				//replace relative paths to absolute path for imports
 				for (var i = 0; i < _importObjs.length; i++) {
-					let _fullImportStatement = _importObjs[i].fullImportStatement
-					let srcFileDir = srcFiles[j].substring(0, srcFiles[j].lastIndexOf("/"));
-					_fullImportStatement = _fullImportStatement.replace(_importObjs[i].dependencyPath, srcFileDir + "/" + _importObjs[i].dependencyPath)
-					fileContent = fileContent.replace(_importObjs[i].fullImportStatement, _fullImportStatement)
+					let isAbsolutePath = _importObjs[i].dependencyPath.indexOf(".") != 0
+					if (!isAbsolutePath) {
+						let _fullImportStatement = _importObjs[i].fullImportStatement
+						let srcFileDir = srcFiles[j].substring(0, srcFiles[j].lastIndexOf("/"));
+						_fullImportStatement = _fullImportStatement.replace(_importObjs[i].dependencyPath, srcFileDir + "/" + _importObjs[i].dependencyPath)
+						fileContent = fileContent.replace(_importObjs[i].fullImportStatement, _fullImportStatement)
+					}
 				}
 
 				if (fileContent.indexOf(" is ") > -1) {
