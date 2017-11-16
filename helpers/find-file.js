@@ -2,6 +2,7 @@ const fs = require('fs');
 const glob = require("glob");
 const path = require("path");
 const variables = require("./variables.js");
+const changeRelativePathToAbsolute = require("./change-relative-path-to-absolute.js");
 
 function byName(dir, fileName, cb) {
 	glob(dir + "/**/*.sol", function(err, srcFiles) {
@@ -55,16 +56,7 @@ function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePat
 			else fileContent = fs.readFileSync(srcFiles[j], "utf8");
 
 			findAllImportPaths(dir, fileContent, function(_importObjs) {
-				//replace relative paths to absolute path for imports
-				for (var i = 0; i < _importObjs.length; i++) {
-					let isAbsolutePath = _importObjs[i].dependencyPath.indexOf(".") != 0
-					if (!isAbsolutePath) {
-						let _fullImportStatement = _importObjs[i].fullImportStatement
-						let srcFileDir = srcFiles[j].substring(0, srcFiles[j].lastIndexOf("/"));
-						_fullImportStatement = _fullImportStatement.replace(_importObjs[i].dependencyPath, srcFileDir + "/" + _importObjs[i].dependencyPath)
-						fileContent = fileContent.replace(_importObjs[i].fullImportStatement, _fullImportStatement)
-					}
-				}
+				changeRelativePathToAbsolute(fileContent, srcFiles[j], _importObjs);
 
 				if (fileContent.indexOf(" is ") > -1) {
 					updatedFileContent = updatedFileContent.replace(importStatement, fileContent);
