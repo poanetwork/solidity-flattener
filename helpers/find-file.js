@@ -56,7 +56,7 @@ function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePat
 			else fileContent = fs.readFileSync(srcFiles[j], "utf8");
 
 			findAllImportPaths(dir, fileContent, function(_importObjs) {
-				changeRelativePathToAbsolute(fileContent, srcFiles[j], _importObjs);
+				fileContent = changeRelativePathToAbsolute(fileContent, srcFiles[j], _importObjs);
 
 				if (fileContent.indexOf(" is ") > -1) {
 					updatedFileContent = updatedFileContent.replace(importStatement, fileContent);
