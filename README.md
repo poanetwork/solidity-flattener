@@ -5,7 +5,7 @@
 
 
 ```
-git clone https://github.com/oraclesorg/oracles-combine-solidity
+git clone https://github.com/poanetwork/oracles-combine-solidity
 cd oracles-combine-solidity
 npm install
 ```
