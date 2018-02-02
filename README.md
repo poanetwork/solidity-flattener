@@ -5,8 +5,8 @@
 
 
 ```
-git clone https://github.com/poanetwork/oracles-combine-solidity
-cd oracles-combine-solidity
+git clone https://github.com/poanetwork/solidity-flattener
+cd solidity-flattener
 npm install
 ```
 
