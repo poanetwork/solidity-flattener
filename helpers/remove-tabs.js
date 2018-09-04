@@ -1,6 +1,6 @@
 function removeTabs(content) {
-	content = content.replace(/[\r\n]+/g, '\n'); //removes tabs
-	return content;
+	content = content.replace(/[\r\n]+/g, '\n') //removes tabs
+	return content
 }
 
-module.exports = removeTabs;
+module.exports = removeTabs

@@ -1,22 +1,23 @@
-//const removeTabs = require("./remove-tabs.js");
+//const removeTabs = require("./remove-tabs");
 
 function removeDoubledSolidityVersion(content) {
-	const subStr = "pragma solidity";
+	const subStr = 'pragma solidity'
 	//1st pragma solidity declaration
-	let firstIndex = content.indexOf(subStr);
-	let lastIndex = firstIndex + content.substr(firstIndex).indexOf(";") + 1;
-	let contentPart = content.substr(lastIndex);
-	let contentFiltered = contentPart;
+	let firstIndex = content.indexOf(subStr)
+	let lastIndex = firstIndex + content.substr(firstIndex).indexOf(';') + 1
+	let contentPart = content.substr(lastIndex)
+	let contentFiltered = contentPart
 	//remove other pragma solidity declarations
-	let regex = new RegExp(subStr,"gi");
+	let regex = new RegExp(subStr,'gi')
+	let result
 	while ( (result = regex.exec(contentPart)) ) {
-		let start = result.index;
-		let end = start + contentPart.substr(start).indexOf(";") + 1;
-		if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), "");
+		let start = result.index
+		let end = start + contentPart.substr(start).indexOf(';') + 1
+		if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), '')
 	}
-	let finalContent = content.substr(0, lastIndex) + contentFiltered;
+	let finalContent = content.substr(0, lastIndex) + contentFiltered
 	
-	return finalContent;//removeTabs(finalContent);  //#10
+	return finalContent//removeTabs(finalContent);  //#10
 }
 
-module.exports = removeDoubledSolidityVersion;
+module.exports = removeDoubledSolidityVersion
