@@ -1,5 +1,6 @@
-//const removeTabs = require("./remove-tabs");
-
+/*
+ * Leaves only 1st pragma solidity instruction and removes others
+ */
 function removeDoubledSolidityVersion(content) {
 	const subStr = 'pragma solidity'
 	//1st pragma solidity declaration
@@ -17,7 +18,7 @@ function removeDoubledSolidityVersion(content) {
 	}
 	const finalContent = content.substr(0, lastIndex) + contentFiltered
 	
-	return finalContent //removeTabs(finalContent) #10
+	return finalContent
 }
 
 module.exports = removeDoubledSolidityVersion

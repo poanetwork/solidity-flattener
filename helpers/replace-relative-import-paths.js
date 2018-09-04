@@ -1,14 +1,12 @@
 const updateImportObjectLocationInTarget = require('./update-import-object-location-in-target')
 const findAllImportPaths = require('./find-all-import-paths')
 
-function replaceRelativeImportPaths(fileContent, curDir, cb) {
-	let updatedFileContent = fileContent
-	findAllImportPaths(curDir, fileContent, (importObjs) => {
-		if (!importObjs) {
-			return cb(updatedFileContent)
-		}
-		if (importObjs.length == 0) {
-			return cb(updatedFileContent)
+function replaceRelativeImportPaths(fileContent, curDir) {
+	return new Promise(async (resolve) => {
+		let updatedFileContent = fileContent
+		const importObjs = await findAllImportPaths(curDir, fileContent)
+		if (!importObjs || importObjs.length == 0) {
+			resolve(updatedFileContent)
 		}
 
 		importObjs.forEach((importObj) => {
@@ -27,7 +25,7 @@ function replaceRelativeImportPaths(fileContent, curDir, cb) {
 			const importStatementNew = importStatement.replace(dependencyPath, newPath)
 			updatedFileContent = updatedFileContent.replace(importStatement, importStatementNew)
 		})
-		cb(updatedFileContent)
+		resolve(updatedFileContent)
 	})
 }
 
