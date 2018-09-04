@@ -3,29 +3,30 @@ const findAllImportPaths = require('./find-all-import-paths')
 
 function replaceRelativeImportPaths(fileContent, curDir, cb) {
 	let updatedFileContent = fileContent
-	findAllImportPaths(curDir, fileContent, function(importObjs) {
-		if (!importObjs) return cb(updatedFileContent)
-		if (importObjs.length == 0) return cb(updatedFileContent)
+	findAllImportPaths(curDir, fileContent, (importObjs) => {
+		if (!importObjs) {
+			return cb(updatedFileContent)
+		}
+		if (importObjs.length == 0) {
+			return cb(updatedFileContent)
+		}
 
-		for (let j = 0; j < importObjs.length; j++) {
-			let importObj = importObjs[j]
-
+		importObjs.forEach((importObj) => {
 			importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent)
-			let importStatement = updatedFileContent.substring(importObj.startIndex, importObj.endIndex)
+			const { startIndex, endIndex, dependencyPath } = importObj
+			const importStatement = updatedFileContent.substring(startIndex, endIndex)
 			
 			let newPath
-			if (importObj.dependencyPath.indexOf('../') == 0) {
-				newPath = curDir + importObj.dependencyPath
-			}
-			else if (importObj.dependencyPath.indexOf('./') == 0) {
-				newPath = curDir + importObj.dependencyPath
+			if (dependencyPath.indexOf('../') == 0
+				|| dependencyPath.indexOf('./') == 0) {
+				newPath = curDir + dependencyPath
 			}
 			else {
-				newPath = importObj.dependencyPath
+				newPath = dependencyPath
 			}
-			let importStatementNew = importStatement.replace(importObj.dependencyPath, newPath)
+			const importStatementNew = importStatement.replace(dependencyPath, newPath)
 			updatedFileContent = updatedFileContent.replace(importStatement, importStatementNew)
-		}
+		})
 		cb(updatedFileContent)
 	})
 }

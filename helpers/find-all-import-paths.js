@@ -9,39 +9,39 @@ function findAllImportPaths(dir, content, cb) {
 	const subStr = 'import '
 	let allImports = []
 	let regex = new RegExp(subStr,'gi')
-	var importsCount = (content.match(regex) || []).length
+	let importsCount = (content.match(regex) || []).length
 	let importsIterator = 0
 	let result
 	while ( (result = regex.exec(content)) ) {
 		let startImport = result.index
 		let endImport = startImport + content.substr(startImport).indexOf(';') + 1
 		let fullImportStatement = content.substring(startImport, endImport)
-		let dependencyPath = fullImportStatement.split('"').length > 1 ? fullImportStatement.split('"')[1]: fullImportStatement.split('\'')[1]
-		let alias = fullImportStatement.split(' as ').length > 1?fullImportStatement.split(' as ')[1].split(';')[0]:null
+		let dependencyPath = fullImportStatement.split('"').length > 1 ? fullImportStatement.split('"')[1] : fullImportStatement.split('\'')[1]
+		let alias = fullImportStatement.split(' as ').length > 1 ? fullImportStatement.split(' as ')[1].split(';')[0] : null
 
 		let importObj = {
-			'startIndex': startImport, 
-			'endIndex': endImport, 
-			'dependencyPath': dependencyPath, 
-			'fullImportStatement': fullImportStatement,
-			'alias': alias,
-			'contractName': null
+			startIndex: startImport, 
+			endIndex: endImport, 
+			dependencyPath, 
+			fullImportStatement,
+			alias,
+			contractName: null
 		}
 
 		if (alias) {
 			alias = alias.replace(/\s/g,'')
-			var fileExists = fs.existsSync(dependencyPath, fs.F_OK)
+			let fileExists = fs.existsSync(dependencyPath, fs.F_OK)
 			if (fileExists) {
 				importsIterator++
 				let fileContent = fs.readFileSync(dependencyPath, 'utf8')
-				if (fileContent.indexOf('contract ') > -1) {
+				if (fileContent.includes('contract ')) {
 					importObj.contractName = getContractName(fileContent)
 				}
 				allImports.push(importObj)
 			} else {
-				findFile.byName(dir.substring(0, dir.lastIndexOf('/')), path.basename(dependencyPath), function(fileContent) {
+				findFile.byName(dir.substring(0, dir.lastIndexOf('/')), path.basename(dependencyPath), (fileContent) => {
 					importsIterator++
-					if (fileContent.indexOf('contract ') > -1) {
+					if (fileContent.includes('contract ')) {
 						importObj.contractName = getContractName(fileContent)
 					}
 					allImports.push(importObj)

@@ -10,37 +10,37 @@ const log = require('./logger')
 
 function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir, cb) {
 	if (i < importObjs.length) {
-		var importObj = importObjs[i]
+		let importObj = importObjs[i]
 		importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent)
+		const { alias, contractName, startIndex, endIndex, dependencyPath } = importObj
 
 		//replace contracts aliases
-		if (importObj.contractName) {
-			updatedFileContent = updatedFileContent.replace(importObj.alias + '.', importObj.contractName + '.')
+		if (contractName) {
+			updatedFileContent = updatedFileContent.replace(alias + '.', contractName + '.')
 		}
 		
-		let importStatement = updatedFileContent.substring(importObj.startIndex, importObj.endIndex)
+		let importStatement = updatedFileContent.substring(startIndex, endIndex)
 
 		let fileExists
 		let filePath
-		let isRelativePath = importObj.dependencyPath.indexOf('.') == 0
+		let isRelativePath = dependencyPath.indexOf('.') == 0
 		if (isRelativePath) {
-			filePath = dir + importObj.dependencyPath
+			filePath = dir + dependencyPath
 			fileExists = fs.existsSync(filePath, fs.F_OK)
-		}
-		else {
-			filePath = importObj.dependencyPath
+		} else {
+			filePath = dependencyPath
 			fileExists = fs.existsSync(filePath, fs.F_OK)
 		}
 		if (fileExists) {
-			log.info('###' + importObj.dependencyPath + ' SOURCE FILE FOUND###')
-			var importedFileContent = fs.readFileSync(filePath, 'utf8')
+			log.info('###' + dependencyPath + ' SOURCE FILE FOUND###')
+			let importedFileContent = fs.readFileSync(filePath, 'utf8')
 
-			findAllImportPaths(dir, importedFileContent, function(_importObjs) {
+			findAllImportPaths(dir, importedFileContent, (_importObjs) => {
 				importedFileContent = changeRelativePathToAbsolute(importedFileContent, filePath, _importObjs)
-				replaceRelativeImportPaths(importedFileContent, path.dirname(importObj.dependencyPath) + '/', function(importedFileContentUpdated) {
+				replaceRelativeImportPaths(importedFileContent, path.dirname(dependencyPath) + '/', (importedFileContentUpdated) => {
 					if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
 						variables.importedSrcFiles[path.basename(filePath)] = importedFileContentUpdated
-						if (importedFileContentUpdated.indexOf(' is ') > -1) {
+						if (importedFileContentUpdated.includes(' is ')) {
 							updatedFileContent = updatedFileContent.replace(importStatement, importedFileContentUpdated)
 						} else {
 							updatedFileContent = updatedFileContent.replace(importStatement, '')
@@ -50,8 +50,8 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 					else {
 						updatedFileContent = updatedFileContent.replace(importStatement, '')
 						//issue #1.
-						if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(filePath)] > -1)
-							&& updatedFileContent.indexOf('import ') == -1) {
+						if (updatedFileContent.includes(variables.importedSrcFiles[path.basename(filePath)])
+							&& updatedFileContent.includes('import ')) {
 							updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(filePath)], '')
 							updatedFileContent = importedFileContentUpdated + updatedFileContent
 						}
@@ -63,18 +63,18 @@ function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir,
 			})
 		} else {
 			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
-				log.info('!!!' + importObj.dependencyPath + ' SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!')
+				log.info('!!!' + dependencyPath + ' SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!')
 				
-				var directorySeperator
+				let directorySeperator
 				if (process.platform === 'win32') {
 					directorySeperator = '\\'
 				} else {
 					directorySeperator = '/'
 				}
 				
-				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), importObj.dependencyPath, updatedFileContent, importStatement, function(_updatedFileContent) {
+				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), dependencyPath, updatedFileContent, importStatement, importObj, (_updatedFileContent) => {
 					i++
-					log.info('###' + importObj.dependencyPath + ' SOURCE FILE FOUND###')
+					log.info('###' + dependencyPath + ' SOURCE FILE FOUND###')
 					replaceAllImportsInCurrentLayer(i, importObjs, _updatedFileContent, dir, cb)
 				})
 			} else {

@@ -6,12 +6,12 @@ const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute
 const log = require('./logger')
 
 function byName(dir, fileName, cb) {
-	glob(dir + '/**/*.sol', function(err, srcFiles) {
+	glob(dir + '/**/*.sol', (err, srcFiles) => {
 		if (err) return log.error(err.message)
 
-		for (var j = 0; j < srcFiles.length; j++) {
+		for (let j = 0; j < srcFiles.length; j++) {
 			if (path.basename(srcFiles[j]) == fileName) {
-				var fileContent = fs.readFileSync(srcFiles[j], 'utf8')
+				let fileContent = fs.readFileSync(srcFiles[j], 'utf8')
 				cb(fileContent)
 				return
 			}
@@ -22,19 +22,19 @@ function byName(dir, fileName, cb) {
 	})
 }
 
-function byNameAndReplace(dir, filePath, updatedFileContent, importStatement, cb) {
-	glob(dir + '/**/*.sol', function(err, srcFiles) {
+function byNameAndReplace(dir, filePath, updatedFileContent, importStatement, importObj, cb) {
+	glob(dir + '/**/*.sol', (err, srcFiles) => {
 		if (err) return log.error(err.message)
 		
 		let importIsReplacedBefore = false
-		byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePath, srcFiles, 0, cb, function() {
+		byNameAndReplaceInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, 0, cb, () => {
 			if (importIsReplacedBefore) {
 				updatedFileContent = updatedFileContent.replace(importStatement, '')
 				cb(updatedFileContent)
 			} else {
-				if (dir.indexOf('/') > -1) {
+				if (dir.includes('/')) {
 					dir = dir.substring(0, dir.lastIndexOf('/'))
-					byNameAndReplace(dir, filePath, updatedFileContent, importStatement, cb)
+					byNameAndReplace(dir, filePath, updatedFileContent, importStatement, importObj, cb)
 				} else {
 					updatedFileContent = updatedFileContent.replace(importStatement, '')
 					cb(updatedFileContent)
@@ -44,11 +44,11 @@ function byNameAndReplace(dir, filePath, updatedFileContent, importStatement, cb
 	})
 }
 
-function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner) {
+function byNameAndReplaceInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner) {
 	if (j >= srcFiles.length) return cbInner()
 	const findAllImportPaths = require('./find-all-import-paths.js')
 	let isAbsolutePath = filePath.indexOf('.') != 0
-	if (isAbsolutePath && srcFiles[j].indexOf(filePath) > -1) {
+	if (isAbsolutePath && srcFiles[j].includes(filePath)) {
 
 		if (!variables.importedSrcFiles.hasOwnProperty(path.basename(srcFiles[j]))
 			|| fs.existsSync(filePath)) {
@@ -56,10 +56,10 @@ function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePat
 			if (fs.existsSync(filePath)) fileContent = fs.readFileSync(filePath, 'utf8')
 			else fileContent = fs.readFileSync(srcFiles[j], 'utf8')
 
-			findAllImportPaths(dir, fileContent, function(_importObjs) {
+			findAllImportPaths(dir, fileContent, (_importObjs) => {
 				fileContent = changeRelativePathToAbsolute(fileContent, srcFiles[j], _importObjs)
 
-				if (fileContent.indexOf(' is ') > -1) {
+				if (fileContent.includes(' is ')) {
 					updatedFileContent = updatedFileContent.replace(importStatement, fileContent)
 				} else {
 					//updatedFileContent = updatedFileContent.replace(importStatement, fileContent);
@@ -72,22 +72,22 @@ function byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePat
 		} else {
 			updatedFileContent = updatedFileContent.replace(importStatement, '')
 			//issue #2.
-			if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)] > -1)
-				&& updatedFileContent.indexOf('import ') == -1) {
-				var fileContent = fs.readFileSync(srcFiles[j], 'utf8')
+			if (updatedFileContent.includes(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)])
+				&& updatedFileContent.includes('import ')) {
+				let fileContent = fs.readFileSync(srcFiles[j], 'utf8')
 				updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)], '')
 				updatedFileContent = fileContent + updatedFileContent
 			}
 			j++
-			byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner)
+			byNameAndReplaceInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner)
 		}
 	} else {
 		j++
-		byNameAndReplaceInner(importStatement, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner)
+		byNameAndReplaceInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, cb, cbInner)
 	}
 }
 
 module.exports = {
-	byName: byName,
-	byNameAndReplace: byNameAndReplace
+	byName,
+	byNameAndReplace
 }
