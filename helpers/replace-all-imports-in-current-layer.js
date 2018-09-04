@@ -27,7 +27,7 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 	if (contractName) {
 		updatedFileContent = updatedFileContent.replace(alias + '.', contractName + '.')
 	}
-	
+
 	let importStatement = updatedFileContent.substring(startIndex, endIndex)
 
 	let fileExists, filePath
@@ -50,16 +50,14 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 			if (importedFileContentUpdated.includes(' is ')) {
 				updatedFileContent = updatedFileContent.replace(importStatement, importedFileContentUpdated)
 			} else {
-				updatedFileContent = updatedFileContent.replace(importStatement, '')
-				updatedFileContent = importedFileContentUpdated + updatedFileContent
+				updatedFileContent = importedFileContentUpdated + updatedFileContent.replace(importStatement, '')
 			}
 		} else {
 			updatedFileContent = updatedFileContent.replace(importStatement, '')
 			//issue #1.
 			if (updatedFileContent.includes(variables.importedSrcFiles[path.basename(filePath)])
 				&& updatedFileContent.includes('import ')) {
-				updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(filePath)], '')
-				updatedFileContent = importedFileContentUpdated + updatedFileContent
+				updatedFileContent = importedFileContentUpdated + updatedFileContent.replace(variables.importedSrcFiles[path.basename(filePath)], '')
 			}
 		}
 
@@ -68,7 +66,7 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 	} else {
 		if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
 			log.info('!!!' + dependencyPath + ' SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!')
-			
+
 			let directorySeperator
 			if (process.platform === 'win32') {
 				directorySeperator = '\\'
@@ -86,7 +84,7 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 			i++
 			replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileContent, dir, resolve)
 		}
-	}		
+	}
 }
 
 module.exports = replaceAllImportsInCurrentLayer

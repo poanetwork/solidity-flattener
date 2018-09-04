@@ -24,9 +24,9 @@ function findAllImportPaths(dir, content) {
 			let alias = fullImportStatement.split(' as ').length > 1 ? fullImportStatement.split(' as ')[1].split(';')[0] : null
 
 			let importObj = {
-				startIndex: startImport, 
-				endIndex: endImport, 
-				dependencyPath, 
+				startIndex: startImport,
+				endIndex: endImport,
+				dependencyPath,
 				fullImportStatement,
 				alias,
 			}

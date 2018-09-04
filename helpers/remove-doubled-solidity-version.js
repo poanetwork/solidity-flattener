@@ -17,7 +17,7 @@ function removeDoubledSolidityVersion(content) {
 		if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), '')
 	}
 	const finalContent = content.substr(0, lastIndex) + contentFiltered
-	
+
 	return finalContent
 }
 

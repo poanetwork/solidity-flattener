@@ -63,7 +63,7 @@ async function byNameAndReplaceInnerRecursivelyInner(importStatement, importObj,
 	let flattenFileContent = ''
 	if (isAbsolutePath && srcFile.includes(filePath)) {
 		if (!variables.importedSrcFiles.hasOwnProperty(path.basename(srcFile)) || fs.existsSync(filePath)) {
-			let importFileContent 
+			let importFileContent
 			if (fs.existsSync(filePath)) {
 				importFileContent = fs.readFileSync(filePath, 'utf8')
 			} else {
