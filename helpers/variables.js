@@ -1,16 +1,17 @@
 const path = require('path')
 const fs = require('fs')
+const constants = require('./constants')
 
 const configPath = './config.json'
 let configExists = fs.existsSync(configPath, fs.F_OK)
 let config
 if (configExists) {
-	config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+	config = JSON.parse(fs.readFileSync(configPath, constants.UTF8))
 }
 
 //Input solidity file path
 let args = process.argv.slice(2)
-let inputFilePath = args.length > 0 ? args[0] : config ? config.inputFilePath : ''
+let inputFilePath = args.length > 0 ? args[0] : config ? config.inputFilePath : constants.EMPTY
 
 //Input solidity file dir name
 let inputFileDir = path.dirname(inputFilePath)

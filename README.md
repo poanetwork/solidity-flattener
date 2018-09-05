@@ -32,7 +32,7 @@ Success! Flat file is generated to ./out directory
 
 `./flatContract.sol` - flat .sol file is created in output directory (`./out/` by default)
 
-**Note:** *utility won't work with aliases at import statements*
+**Note:** *utility doesn't support aliases at import statements*
 
 ## Config
 

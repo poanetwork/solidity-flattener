@@ -2,26 +2,26 @@ const fs = require('fs')
 const path = require('path')
 let decomment = require('decomment')
 const findFile = require('./find-file')
+const constants = require('./constants')
 
 /*
  * Finds all import paths
  */
 function findAllImportPaths(dir, content) {
-	return new Promise((resolve) => {
+	return new Promise(async (resolve) => {
 		//strip comments from content
 		content = decomment(content, {safe: true})
-		const subStr = 'import '
 		let allImports = []
-		let regex = new RegExp(subStr,'gi')
+		let regex = new RegExp(constants.IMPORT,'gi')
 		let importsCount = (content.match(regex) || []).length
 		let importsIterator = 0
 		let result
 		while ( (result = regex.exec(content)) ) {
 			let startImport = result.index
-			let endImport = startImport + content.substr(startImport).indexOf(';') + 1
+			let endImport = startImport + content.substr(startImport).indexOf(constants.SEMICOLON) + 1
 			let fullImportStatement = content.substring(startImport, endImport)
 			let dependencyPath = fullImportStatement.split('"').length > 1 ? fullImportStatement.split('"')[1] : fullImportStatement.split('\'')[1]
-			let alias = fullImportStatement.split(' as ').length > 1 ? fullImportStatement.split(' as ')[1].split(';')[0] : null
+			let alias = fullImportStatement.split(constants.AS).length > 1 ? fullImportStatement.split(constants.AS)[1].split(constants.SEMICOLON)[0] : null
 
 			let importObj = {
 				startIndex: startImport,
@@ -32,26 +32,25 @@ function findAllImportPaths(dir, content) {
 			}
 
 			if (alias) {
-				alias = alias.replace(/\s/g,'')
+				alias = alias.replace(/\s/g,constants.EMPTY)
 				let fileExists = fs.existsSync(dependencyPath, fs.F_OK)
 				if (fileExists) {
 					importsIterator++
-					let fileContent = fs.readFileSync(dependencyPath, 'utf8')
-					if (fileContent.includes('contract ')) {
+					let fileContent = fs.readFileSync(dependencyPath, constants.UTF8)
+					if (fileContent.includes(constants.CONTRACT)) {
 						importObj.contractName = getContractName(fileContent)
 					}
 					allImports.push(importObj)
 				} else {
-					const fileName = dir.substring(0, dir.lastIndexOf('/'))
-					findFile.byName(fileName, path.basename(dependencyPath), (fileContent) => {
-						importsIterator++
-						if (fileContent.includes('contract ')) {
-							importObj.contractName = getContractName(fileContent)
-						}
-						allImports.push(importObj)
+					const fileName = dir.substring(0, dir.lastIndexOf(constants.SLASH))
+					const fileContent = await findFile.byName(fileName, path.basename(dependencyPath))
+					importsIterator++
+					if (fileContent.includes(constants.CONTRACT)) {
+						importObj.contractName = getContractName(fileContent)
+					}
+					allImports.push(importObj)
 
-						if (importsIterator == importsCount) resolve(allImports)
-					})
+					if (importsIterator == importsCount) resolve(allImports)
 				}
 			} else {
 				importsIterator++
@@ -63,7 +62,7 @@ function findAllImportPaths(dir, content) {
 }
 
 function getContractName(fileContent) {
-	return fileContent.substring((fileContent.indexOf('contract ') + ('contract ').length), fileContent.indexOf('{')).replace(/\s/g,'')
+	return fileContent.substring((fileContent.indexOf(constants.CONTRACT) + constants.CONTRACT.length), fileContent.indexOf('{')).replace(/\s/g,constants.EMPTY)
 }
 
 module.exports = findAllImportPaths

@@ -14,14 +14,9 @@ function replaceRelativeImportPaths(fileContent, curDir) {
 			const { startIndex, endIndex, dependencyPath } = importObj
 			const importStatement = updatedFileContent.substring(startIndex, endIndex)
 
-			let newPath
-			if (dependencyPath.indexOf('../') == 0
-				|| dependencyPath.indexOf('./') == 0) {
-				newPath = curDir + dependencyPath
-			}
-			else {
-				newPath = dependencyPath
-			}
+			const isRelativePath = dependencyPath.startsWith('../') || dependencyPath.startsWith('./')
+			const newPath = isRelativePath ? (curDir + dependencyPath) : dependencyPath
+
 			const importStatementNew = importStatement.replace(dependencyPath, newPath)
 			updatedFileContent = updatedFileContent.replace(importStatement, importStatementNew)
 		})

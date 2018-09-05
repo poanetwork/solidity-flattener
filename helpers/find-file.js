@@ -2,99 +2,100 @@ const fs = require('fs')
 const glob = require('glob-promise')
 const path = require('path')
 const variables = require('./variables')
+const constants = require('./constants')
 const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute')
-const log = require('./logger')
+const findAllImportPaths = require('./find-all-import-paths.js')
 
-function byName(dir, fileName, cb) {
-	glob(dir + '/**/*.sol')
-		.then((srcFiles) => {
-			for (let j = 0; j < srcFiles.length; j++) {
-				if (path.basename(srcFiles[j]) == fileName) {
-					let fileContent = fs.readFileSync(srcFiles[j], 'utf8')
-					cb(fileContent)
-					return
-				}
-			}
-
-			dir = dir.substring(0, dir.lastIndexOf('/'))
-			byName(dir, fileName, cb)
-		})
-		.catch(err => {
-			log.error(err.message)
-		})
-}
-
-async function byNameAndReplace(dir, filePath, updatedFileContent, importStatement, importObj) {
-	return new Promise((resolve, reject) => {
-		return byNameAndReplaceInner(dir, filePath, updatedFileContent, importStatement, importObj, resolve, reject)
+function byName(dir, fileName) {
+	return new Promise((resolve) => {
+		return byNameInner(dir, fileName, resolve)
 	})
 }
 
-async function byNameAndReplaceInner(dir, filePath, updatedFileContent, importStatement, importObj, resolve, reject) {
+async function byNameInner(dir, fileName, resolve) {
 	const srcFiles = await glob(dir + '/**/*.sol')
-	let _importIsReplacedBefore = false
-	let result = await byNameAndReplaceInnerRecursively(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, 0, _importIsReplacedBefore)
+	for (let j = 0; j < srcFiles.length; j++) {
+		if (path.basename(srcFiles[j]) == fileName) {
+			let fileContent = fs.readFileSync(srcFiles[j], constants.UTF8)
+			resolve(fileContent)
+			break
+		}
+	}
+
+	dir = dir.substring(0, dir.lastIndexOf(constants.SLASH))
+	byNameInner(dir, fileName, resolve)
+}
+
+async function byNameAndReplace(dir, dependencyPath, updatedFileContent, importStatement) {
+	return new Promise((resolve, reject) => {
+		return byNameAndReplaceInner(dir, dependencyPath, updatedFileContent, importStatement, resolve, reject)
+	})
+}
+
+async function byNameAndReplaceInner(dir, dependencyPath, updatedFileContent, importStatement, resolve, reject) {
+	const srcFiles = await glob(dir + '/**/*.sol')
+	let result = await byNameAndReplaceInnerRecursively(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, 0)
 	let { flattenFileContent, importIsReplacedBefore } = result
 	if (importIsReplacedBefore) {
-		flattenFileContent = flattenFileContent.replace(importStatement, '')
+		flattenFileContent = flattenFileContent.replace(importStatement, constants.EMPTY)
 		return resolve(flattenFileContent)
 	} else {
-		if (dir.includes('/')) {
-			dir = dir.substring(0, dir.lastIndexOf('/'))
-			byNameAndReplaceInner(dir, filePath, flattenFileContent, importStatement, importObj, resolve, reject)
+		if (dir.includes(constants.SLASH)) {
+			dir = dir.substring(0, dir.lastIndexOf(constants.SLASH))
+			byNameAndReplaceInner(dir, dependencyPath, flattenFileContent, importStatement, resolve, reject)
 		} else {
-			flattenFileContent = flattenFileContent.replace(importStatement, '')
+			flattenFileContent = flattenFileContent.replace(importStatement, constants.EMPTY)
 			return resolve(flattenFileContent)
 		}
 	}
 }
 
-async function byNameAndReplaceInnerRecursively(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, importIsReplacedBefore) {
+async function byNameAndReplaceInnerRecursively(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, j) {
 	return new Promise((resolve, reject) => {
-		byNameAndReplaceInnerRecursivelyInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, resolve, reject, importIsReplacedBefore)
+		byNameAndReplaceInnerRecursivelyInner(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, j, resolve, reject)
 	})
 }
 
-async function byNameAndReplaceInnerRecursivelyInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, resolve, reject, importIsReplacedBefore) {
+async function byNameAndReplaceInnerRecursivelyInner(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, j, resolve, reject, importIsReplacedBefore) {
 	if (j >= srcFiles.length) return resolve({ flattenFileContent: updatedFileContent, importIsReplacedBefore })
-	const findAllImportPaths = require('./find-all-import-paths.js')
-	let isAbsolutePath = filePath.indexOf('.') != 0
+
+	let isAbsolutePath = !dependencyPath.startsWith(constants.DOT)
 	const srcFile = srcFiles[j]
-	let flattenFileContent = ''
-	if (isAbsolutePath && srcFile.includes(filePath)) {
-		if (!variables.importedSrcFiles.hasOwnProperty(path.basename(srcFile)) || fs.existsSync(filePath)) {
+	const { importedSrcFiles } = variables
+	if (isAbsolutePath && srcFile.includes(dependencyPath)) {
+		let flattenFileContent = constants.EMPTY
+		if (!importedSrcFiles.hasOwnProperty(path.basename(srcFile)) || fs.existsSync(dependencyPath)) {
 			let importFileContent
-			if (fs.existsSync(filePath)) {
-				importFileContent = fs.readFileSync(filePath, 'utf8')
+			if (fs.existsSync(dependencyPath)) {
+				importFileContent = fs.readFileSync(dependencyPath, constants.UTF8)
 			} else {
-				importFileContent = fs.readFileSync(srcFile, 'utf8')
+				importFileContent = fs.readFileSync(srcFile, constants.UTF8)
 			}
 			const importObjs = await findAllImportPaths(dir, importFileContent)
 			importFileContent = changeRelativePathToAbsolute(importFileContent, srcFile, importObjs)
 
-			if (importFileContent.includes(' is ')) {
+			if (importFileContent.includes(constants.IS)) {
 				flattenFileContent = updatedFileContent.replace(importStatement, importFileContent)
 			} else {
-				flattenFileContent = importFileContent + updatedFileContent.replace(importStatement, '')
+				flattenFileContent = importFileContent + updatedFileContent.replace(importStatement, constants.EMPTY)
 			}
-			variables.importedSrcFiles[path.basename(srcFile)] = importFileContent
-			return resolve({ flattenFileContent, importIsReplacedBefore: true })
+			importedSrcFiles[path.basename(srcFile)] = importFileContent
+			resolve({ flattenFileContent, importIsReplacedBefore: true })
 		} else {
-			flattenFileContent = updatedFileContent.replace(importStatement, '')
+			flattenFileContent = updatedFileContent.replace(importStatement, constants.EMPTY)
 			//issue #2.
-			const fileName = variables.importedSrcFiles[path.basename(dir + importObj.dependencyPath)]
-			if (flattenFileContent.includes(fileName)
-				&& flattenFileContent.includes('import ')) {
-				let importFileContent = fs.readFileSync(srcFile, 'utf8')
-				flattenFileContent = importFileContent + flattenFileContent.replace(fileName, '')
+			const fileName = importedSrcFiles[path.basename(dir + dependencyPath)]
+			if (flattenFileContent.includes(fileName) && flattenFileContent.includes(constants.IMPORT)) {
+				let importFileContent = fs.readFileSync(srcFile, constants.UTF8)
+				flattenFileContent = importFileContent + flattenFileContent.replace(fileName, constants.EMPTY)
 			}
 			importIsReplacedBefore = true
 			j++
-			byNameAndReplaceInnerRecursivelyInner(importStatement, importObj, flattenFileContent, dir, filePath, srcFiles, j, resolve, reject, importIsReplacedBefore)
+			byNameAndReplaceInnerRecursivelyInner(importStatement, flattenFileContent, dir, dependencyPath, srcFiles, j, resolve, reject, importIsReplacedBefore)
 		}
 	} else {
 		j++
-		byNameAndReplaceInnerRecursivelyInner(importStatement, importObj, updatedFileContent, dir, filePath, srcFiles, j, resolve, reject, importIsReplacedBefore)
+		byNameAndReplaceInnerRecursivelyInner(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, j, resolve, reject, importIsReplacedBefore)
 	}
 }
 
