@@ -1,13 +1,13 @@
 const assert = require('assert')
 const cleanPath = require('../../helpers/clean-path.js')
 
-const path = './././././ta/fgfd/./gfd/gfd/./g/dfg/dfgdf/./gd/fg/././df/gdf/g/js'
-const expectedCleanedPath = './ta/fgfd/gfd/gfd/g/dfg/dfgdf/gd/fg/df/gdf/g/js'
+const path = './././abc/./def/./././ghi/./jk/test.js'
+const expectedCleanedPath = './abc/def/ghi/jk/test.js'
 
-const path2 = '../gfdgfdgfd/../gdfgdfgdfgdfgd'
-const expectedCleanedPath2 = '../gdfgdfgdfgdfgd'
+const path2 = '../abc/../def'
+const expectedCleanedPath2 = '../def'
 
-const path3 = './abc/def/gedfg/test.js'
+const path3 = './abc/def/ghijk/test.js'
 
 describe('cleanPath', () => {
 	it('should clean path to file from all occurrences of /./', async () => {
