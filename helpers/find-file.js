@@ -12,7 +12,7 @@ function byName(dir, fileName) {
 }
 
 async function byNameInner(dir, fileName, resolve) {
-	const srcFiles = await glob(dir + '/**/*.sol')
+	const srcFiles = await glob(dir + constants.SOL)
 	for (let j = 0; j < srcFiles.length; j++) {
 		if (path.basename(srcFiles[j]) == fileName) {
 			let fileContent = fs.readFileSync(srcFiles[j], constants.UTF8)
@@ -32,7 +32,7 @@ async function byNameAndReplace(dir, dependencyPath, updatedFileContent, importS
 }
 
 async function byNameAndReplaceInner(dir, dependencyPath, updatedFileContent, importStatement, resolve, reject) {
-	const srcFiles = await glob(dir + '/**/*.sol')
+	const srcFiles = await glob(dir + constants.SOL)
 	let result = await byNameAndReplaceInnerRecursively(importStatement, updatedFileContent, dir, dependencyPath, srcFiles, 0)
 	let { flattenFileContent, importIsReplacedBefore } = result
 	if (importIsReplacedBefore) {
@@ -59,32 +59,31 @@ async function byNameAndReplaceInnerRecursivelyInner(importStatement, updatedFil
 	if (j >= srcFiles.length) return resolve({ flattenFileContent: updatedFileContent, importIsReplacedBefore })
 
 	let isAbsolutePath = !dependencyPath.startsWith(constants.DOT)
-	const srcFile = srcFiles[j]
+	const filePath = srcFiles[j]
 	const { importedSrcFiles } = variables
-	if (isAbsolutePath && srcFile.includes(dependencyPath)) {
+	if (isAbsolutePath && filePath.includes(dependencyPath)) {
 		let flattenFileContent = constants.EMPTY
-		if (!importedSrcFiles.hasOwnProperty(path.basename(srcFile)) || fs.existsSync(dependencyPath)) {
+		if (!importedSrcFiles.hasOwnProperty(path.basename(filePath)) || fs.existsSync(dependencyPath)) {
 			let importFileContent
 			if (fs.existsSync(dependencyPath)) {
-				importFileContent = fs.readFileSync(dependencyPath, constants.UTF8)
+				importFileContent = await changeRelativePathToAbsolute(dependencyPath)
 			} else {
-				importFileContent = fs.readFileSync(srcFile, constants.UTF8)
+				importFileContent = await changeRelativePathToAbsolute(filePath)
 			}
-			importFileContent = await changeRelativePathToAbsolute(dir, importFileContent)
 
 			if (importFileContent.includes(constants.IS)) {
 				flattenFileContent = updatedFileContent.replace(importStatement, importFileContent)
 			} else {
 				flattenFileContent = importFileContent + updatedFileContent.replace(importStatement, constants.EMPTY)
 			}
-			importedSrcFiles[path.basename(srcFile)] = importFileContent
+			importedSrcFiles[path.basename(filePath)] = importFileContent
 			resolve({ flattenFileContent, importIsReplacedBefore: true })
 		} else {
 			flattenFileContent = updatedFileContent.replace(importStatement, constants.EMPTY)
 			//issue #2.
 			const fileName = importedSrcFiles[path.basename(dir + dependencyPath)]
 			if (flattenFileContent.includes(fileName) && flattenFileContent.includes(constants.IMPORT)) {
-				let importFileContent = fs.readFileSync(srcFile, constants.UTF8)
+				let importFileContent = fs.readFileSync(filePath, constants.UTF8)
 				flattenFileContent = importFileContent + flattenFileContent.replace(fileName, constants.EMPTY)
 			}
 			importIsReplacedBefore = true

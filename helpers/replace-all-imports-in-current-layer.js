@@ -3,7 +3,6 @@ const path = require('path')
 const variables = require('./variables')
 const constants = require('./constants')
 const findFile = require('./find-file')
-const replaceRelativeImportPaths = require('./replace-relative-import-paths')
 const updateImportObjectLocationInTarget = require('./update-import-object-location-in-target')
 const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute')
 const cleanPath = require('./clean-path')
@@ -20,6 +19,8 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 		return resolve(updatedFileContent)
 	}
 
+	// console.log(importObjs)
+	// console.log(dir)
 	let importObj = importObjs[i]
 	importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent)
 	const { alias, contractName, startIndex, endIndex } = importObj
@@ -34,23 +35,18 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 		_updatedFileContent = updatedFileContent
 	}
 
-	console.log(`dependencyPath before: ${dependencyPath}`)
 	dependencyPath = cleanPath(dependencyPath)
-	console.log(`dependencyPath after: ${dependencyPath}`)
-	let isRelativePath = dependencyPath.startsWith(constants.DOT)
-	let filePath = isRelativePath ? dir + dependencyPath : dependencyPath
-	console.log(`filePath before: ${filePath}`)
+	let isAbsolutePath = !dependencyPath.startsWith(constants.DOT)
+	let filePath = isAbsolutePath ? dependencyPath : (dir + dependencyPath)
 	filePath = cleanPath(filePath)
-	console.log(`filePath after: ${filePath}`)
 
 	const importStatement = updatedFileContent.substring(startIndex, endIndex)
 	const fileBaseName = path.basename(filePath)
 	const fileExists = fs.existsSync(filePath, fs.F_OK)
 	if (fileExists) {
-		log.info(`### ${dependencyPath} SOURCE FILE WAS FOUND###`)
-		let importedFileContent = fs.readFileSync(filePath, constants.UTF8)
-		importedFileContent = await changeRelativePathToAbsolute(dir, importedFileContent)
-		const importedFileContentUpdated = await replaceRelativeImportPaths(importedFileContent, path.dirname(dependencyPath) + constants.SLASH)
+		log.info(`${filePath} SOURCE FILE WAS FOUND`)
+		const importedFileContentUpdated = await changeRelativePathToAbsolute(filePath)
+		//const importedFileContentUpdated = await replaceRelativeImportPaths(path.dirname(dependencyPath) + constants.SLASH, importedFileContent)
 		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
 			importedSrcFiles[fileBaseName] = importedFileContentUpdated
 			if (importedFileContentUpdated.includes(constants.IS)) {
@@ -67,11 +63,11 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 		}
 	} else {
 		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
-			log.info(`!!! ${dependencyPath} SOURCE FILE WAS NOT FOUND. TRY TO FIND IT RECURSIVELY!!!`)
+			log.warn(`!!! ${filePath} SOURCE FILE WAS NOT FOUND. I'M TRYING TO FIND IT RECURSIVELY !!!`)
 			const directorySeperator = process.platform === 'win32' ? '\\' : constants.SLASH
 			const dirNew = dir.substring(0, dir.lastIndexOf(directorySeperator))
 			_updatedFileContent = await findFile.byNameAndReplace(dirNew, dependencyPath, _updatedFileContent, importStatement)
-			log.info(`### ${dependencyPath} SOURCE FILE WAS FOUND###`)
+			log.info(`${filePath} SOURCE FILE WAS FOUND`)
 		} else {
 			_updatedFileContent = _updatedFileContent.replace(importStatement, constants.EMPTY)
 		}

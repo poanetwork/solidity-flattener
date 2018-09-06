@@ -12,16 +12,19 @@ function findAllImportPaths(dir, content) {
 		//strip comments from content
 		content = decomment(content, {safe: true})
 		let allImports = []
-		let regex = new RegExp(constants.IMPORT,'gi')
-		let importsCount = (content.match(regex) || []).length
+		const regex = new RegExp(constants.IMPORT,'gi')
+		const importsCount = (content.match(regex) || []).length
 		let importsIterator = 0
 		let result
 		while ( (result = regex.exec(content)) ) {
-			let startImport = result.index
-			let endImport = startImport + content.substr(startImport).indexOf(constants.SEMICOLON) + 1
-			let fullImportStatement = content.substring(startImport, endImport)
-			let dependencyPath = fullImportStatement.split('"').length > 1 ? fullImportStatement.split('"')[1] : fullImportStatement.split('\'')[1]
-			let alias = fullImportStatement.split(constants.AS).length > 1 ? fullImportStatement.split(constants.AS)[1].split(constants.SEMICOLON)[0] : null
+			const startImport = result.index
+			const endImport = startImport + content.substr(startImport).indexOf(constants.SEMICOLON) + 1
+			const fullImportStatement = content.substring(startImport, endImport)
+			const fullImportParts = fullImportStatement.split('"')
+			const fullImportPartsAlt = fullImportStatement.split('\'')
+			const dependencyPath = fullImportParts.length > 1 ? fullImportParts[1] : fullImportPartsAlt[1]
+			const fullImportPartsByAs = fullImportStatement.split(constants.AS)
+			let alias = fullImportPartsByAs.length > 1 ? fullImportPartsByAs[1].split(constants.SEMICOLON)[0] : null
 
 			let importObj = {
 				startIndex: startImport,
@@ -34,28 +37,20 @@ function findAllImportPaths(dir, content) {
 			if (alias) {
 				alias = alias.replace(/\s/g,constants.EMPTY)
 				let fileExists = fs.existsSync(dependencyPath, fs.F_OK)
+				let fileContent
 				if (fileExists) {
-					importsIterator++
-					let fileContent = fs.readFileSync(dependencyPath, constants.UTF8)
-					if (fileContent.includes(constants.CONTRACT)) {
-						importObj.contractName = getContractName(fileContent)
-					}
-					allImports.push(importObj)
+					fileContent = fs.readFileSync(dependencyPath, constants.UTF8)
 				} else {
-					const fileName = dir.substring(0, dir.lastIndexOf(constants.SLASH))
-					const fileContent = await findFile.byName(fileName, path.basename(dependencyPath))
-					importsIterator++
-					if (fileContent.includes(constants.CONTRACT)) {
-						importObj.contractName = getContractName(fileContent)
-					}
-					allImports.push(importObj)
-
-					if (importsIterator == importsCount) resolve(allImports)
+					dir = dir.substring(0, dir.lastIndexOf(constants.SLASH))
+					fileContent = await findFile.byName(dir, path.basename(dependencyPath))
 				}
-			} else {
-				importsIterator++
-				allImports.push(importObj)
+				if (fileContent.includes(constants.CONTRACT)) {
+					importObj.contractName = getContractName(fileContent)
+				}
 			}
+
+			importsIterator++
+			allImports.push(importObj)
 		}
 		if (importsIterator == importsCount) resolve(allImports)
 	})

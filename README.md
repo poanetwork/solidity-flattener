@@ -30,7 +30,7 @@ npm start
 Expected result: 
 
 ```
-Success! Flat file is generated to ./out directory
+Success! Flat file ORIGINAL_FILE_NAME_flat.sol is generated to ./out directory
 ```
 
 `./flatContract.sol` - flat .sol file is created in output directory (`./out/` by default)

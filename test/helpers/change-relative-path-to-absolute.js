@@ -6,12 +6,11 @@ const changeRelativePathToAbsolute = require('../../helpers/change-relative-path
 const dir = './test/contracts'
 const filePath = dir + '/test.sol'
 const editedFilePath = dir + '/testMock1.sol'
-const fileContent = fs.readFileSync(filePath, constants.UTF8)
 const expectedFileContentNew = fs.readFileSync(editedFilePath, constants.UTF8)
 
 describe('changeRelativePathToAbsolute', () => {
-	it('should change relative path to absolute for imports', async () => {
-		const fileContentNew = await changeRelativePathToAbsolute(dir, fileContent)
+	it('should change relative path to absolute one for imports', async () => {
+		const fileContentNew = await changeRelativePathToAbsolute(filePath)
 		assert.equal(fileContentNew, expectedFileContentNew)
 	})
 })

@@ -8,6 +8,8 @@ const _IMPORT = 'import '
 const _CONTRACT = 'contract '
 const _DOT = '.'
 const _DIRTY_PATH = '/./'
+const _DIRTY_PATH_2 = '/../'
+const _SOL = '/**/*.sol'
 
 module.exports = {
 	UTF8: _UTF8,
@@ -19,5 +21,7 @@ module.exports = {
 	IMPORT: _IMPORT,
 	CONTRACT: _CONTRACT,
 	DOT: _DOT,
-	DIRTY_PATH: _DIRTY_PATH
+	SOL: _SOL,
+	DIRTY_PATH: _DIRTY_PATH,
+	DIRTY_PATH_2: _DIRTY_PATH_2
 }

@@ -1,9 +1,9 @@
 pragma solidity ^0.4.11;
 
 import "./owned.sol";
-import "oracles-contract-key/KeyClass.sol";
-import "oracles-contract-validator/ValidatorClass.sol";
-import "oracles-contract-ballot/BallotClass.sol";
+import "oracles-contract-key/src/KeyClass.sol";
+import "oracles-contract-validator/src/ValidatorClass.sol";
+import "oracles-contract-ballot/src/BallotClass.sol";
 
 contract KeysManager is owned, KeyClass, ValidatorClass, BallotClass {
     int8 internal initialKeysIssued = 0;
