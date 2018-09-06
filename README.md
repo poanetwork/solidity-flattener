@@ -1,4 +1,7 @@
-## Solidity flat file generation
+# Solidity flat file generation
+
+[![Known Vulnerabilities](https://snyk.io/test/github/poanetwork/solidity-flattener/badge.svg)](https://snyk.io/test/github/poanetwork/solidity-flattener)
+[![Coverage Status](https://coveralls.io/repos/github/poanetwork/solidity-flattener/badge.svg?branch=master)](https://coveralls.io/github/poanetwork/solidity-flattener?branch=master)
 
 ##### Combines all local imports to one .sol file
 
@@ -27,12 +30,12 @@ npm start
 Expected result: 
 
 ```
-Success! Flat file is generated to ./out directory
+Success! Flat file ORIGINAL_FILE_NAME_flat.sol is generated to ./out directory
 ```
 
 `./flatContract.sol` - flat .sol file is created in output directory (`./out/` by default)
 
-**Note:** *utility won't work with aliases at import statements*
+**Note:** *utility doesn't support aliases at import statements*
 
 ## Config
 

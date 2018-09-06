@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "oracles-contract-validator/ValidatorClass.sol";
+import "oracles-contract-validator/src/ValidatorClass.sol";
 import "./KeysManager.sol";
 
 contract ValidatorsManager is ValidatorClass, KeysManager {

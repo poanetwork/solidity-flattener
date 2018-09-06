@@ -1,88 +1,80 @@
-const fs = require('fs');
-const path = require("path");
-const variables = require("./variables.js");
-const findFile = require("./find-file.js");
-const replaceRelativeImportPaths = require("./replace-relative-import-paths.js");
-const updateImportObjectLocationInTarget = require("./update-import-object-location-in-target.js");
-const changeRelativePathToAbsolute = require("./change-relative-path-to-absolute.js");
-const findAllImportPaths = require("./find-all-import-paths.js");
+const fs = require('fs')
+const path = require('path')
+const variables = require('./variables')
+const constants = require('./constants')
+const findFile = require('./find-file')
+const updateImportObjectLocationInTarget = require('./update-import-object-location-in-target')
+const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute')
+const cleanPath = require('./clean-path')
+const log = require('./logger')
 
-function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir, cb) {
-	if (i < importObjs.length) {
-		var importObj = importObjs[i];
-		importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent);
-
-		//replace contracts aliases
-		if (importObj.contractName) {
-			updatedFileContent = updatedFileContent.replace(importObj.alias + ".", importObj.contractName + ".");
-		}
-		
-		let importStatement = updatedFileContent.substring(importObj.startIndex, importObj.endIndex);
-
-		let fileExists
-		let filePath
-		let isRelativePath = importObj.dependencyPath.indexOf(".") == 0
-		if (isRelativePath) {
-			filePath = dir + importObj.dependencyPath
-			fileExists = fs.existsSync(filePath, fs.F_OK);
-		}
-		else {
-			filePath = importObj.dependencyPath
-			fileExists = fs.existsSync(filePath, fs.F_OK);
-		}
-		if (fileExists) {
-			console.log("###" + importObj.dependencyPath + " SOURCE FILE FOUND###");
-			var importedFileContent = fs.readFileSync(filePath, "utf8");
-
-			findAllImportPaths(dir, importedFileContent, function(_importObjs) {
-				importedFileContent = changeRelativePathToAbsolute(importedFileContent, filePath, _importObjs);
-				replaceRelativeImportPaths(importedFileContent, path.dirname(importObj.dependencyPath) + "/", function(importedFileContentUpdated) {
-					if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
-						variables.importedSrcFiles[path.basename(filePath)] = importedFileContentUpdated;
-						if (importedFileContentUpdated.indexOf(" is ") > -1) {
-							updatedFileContent = updatedFileContent.replace(importStatement, importedFileContentUpdated);
-						} else {
-							updatedFileContent = updatedFileContent.replace(importStatement, "");
-							updatedFileContent = importedFileContentUpdated + updatedFileContent;
-						}
-					}
-					else {
-						updatedFileContent = updatedFileContent.replace(importStatement, "");
-						//issue #1.
-						if (updatedFileContent.indexOf(variables.importedSrcFiles[path.basename(filePath)] > -1)
-							&& updatedFileContent.indexOf("import ") == -1) {
-							updatedFileContent = updatedFileContent.replace(variables.importedSrcFiles[path.basename(filePath)], "");
-							updatedFileContent = importedFileContentUpdated + updatedFileContent;
-						}
-					}
-
-					i++;
-					replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir, cb);
-				});
-			})
-		} else {
-			if (!variables.importedSrcFiles.hasOwnProperty(path.basename(filePath))) {
-				console.log("!!!" + importObj.dependencyPath + " SOURCE FILE NOT FOUND. TRY TO FIND IT RECURSIVELY!!!");
-				
-				var directorySeperator;
-				if (process.platform === "win32") {
-					directorySeperator = "\\";
-				} else {
-					directorySeperator = "/";
-				}
-				
-				findFile.byNameAndReplace(dir.substring(0, dir.lastIndexOf(directorySeperator)), importObj.dependencyPath, updatedFileContent, importStatement, function(_updatedFileContent) {
-					i++;
-					console.log("###" + importObj.dependencyPath + " SOURCE FILE FOUND###");
-					replaceAllImportsInCurrentLayer(i, importObjs, _updatedFileContent, dir, cb);
-				});
-			} else {
-				updatedFileContent = updatedFileContent.replace(importStatement, "");
-				i++;
-				replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir, cb);
-			}
-		}
-	} else cb(updatedFileContent);
+async function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir) {
+	return new Promise(async (resolve) => {
+		await replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileContent, dir, resolve)
+	})
 }
 
-module.exports = replaceAllImportsInCurrentLayer;
+async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileContent, dir, resolve) {
+	if (i >= importObjs.length) {
+		return resolve(updatedFileContent)
+	}
+
+	// console.log(importObjs)
+	// console.log(dir)
+	let importObj = importObjs[i]
+	importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent)
+	const { alias, contractName, startIndex, endIndex } = importObj
+	let { dependencyPath } = importObj
+	const { importedSrcFiles } = variables
+	let _updatedFileContent
+
+	//replace contracts aliases
+	if (contractName) {
+		_updatedFileContent = updatedFileContent.replace(alias + constants.DOT, contractName + constants.DOT)
+	} else {
+		_updatedFileContent = updatedFileContent
+	}
+
+	dependencyPath = cleanPath(dependencyPath)
+	let isAbsolutePath = !dependencyPath.startsWith(constants.DOT)
+	let filePath = isAbsolutePath ? dependencyPath : (dir + dependencyPath)
+	filePath = cleanPath(filePath)
+
+	const importStatement = updatedFileContent.substring(startIndex, endIndex)
+	const fileBaseName = path.basename(filePath)
+	const fileExists = fs.existsSync(filePath, fs.F_OK)
+	if (fileExists) {
+		log.info(`${filePath} SOURCE FILE WAS FOUND`)
+		const importedFileContentUpdated = await changeRelativePathToAbsolute(filePath)
+		//const importedFileContentUpdated = await replaceRelativeImportPaths(path.dirname(dependencyPath) + constants.SLASH, importedFileContent)
+		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
+			importedSrcFiles[fileBaseName] = importedFileContentUpdated
+			if (importedFileContentUpdated.includes(constants.IS)) {
+				_updatedFileContent = _updatedFileContent.replace(importStatement, importedFileContentUpdated)
+			} else {
+				_updatedFileContent = importedFileContentUpdated + _updatedFileContent.replace(importStatement, constants.EMPTY)
+			}
+		} else {
+			_updatedFileContent = _updatedFileContent.replace(importStatement, constants.EMPTY)
+			//issue #1.
+			if (_updatedFileContent.includes(importedSrcFiles[fileBaseName]) && _updatedFileContent.includes(constants.IMPORT)) {
+				_updatedFileContent = importedFileContentUpdated + _updatedFileContent.replace(importedSrcFiles[fileBaseName], constants.EMPTY)
+			}
+		}
+	} else {
+		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
+			log.warn(`!!! ${filePath} SOURCE FILE WAS NOT FOUND. I'M TRYING TO FIND IT RECURSIVELY !!!`)
+			const directorySeperator = process.platform === 'win32' ? '\\' : constants.SLASH
+			const dirNew = dir.substring(0, dir.lastIndexOf(directorySeperator))
+			_updatedFileContent = await findFile.byNameAndReplace(dirNew, dependencyPath, _updatedFileContent, importStatement)
+			log.info(`${filePath} SOURCE FILE WAS FOUND`)
+		} else {
+			_updatedFileContent = _updatedFileContent.replace(importStatement, constants.EMPTY)
+		}
+	}
+
+	i++
+	replaceAllImportsInCurrentLayerInner(i, importObjs, _updatedFileContent, dir, resolve)
+}
+
+module.exports = replaceAllImportsInCurrentLayer
