@@ -4,7 +4,6 @@ const path = require('path')
 const variables = require('./variables')
 const constants = require('./constants')
 const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute')
-const findAllImportPaths = require('./find-all-import-paths.js')
 
 function byName(dir, fileName) {
 	return new Promise((resolve) => {
@@ -71,8 +70,7 @@ async function byNameAndReplaceInnerRecursivelyInner(importStatement, updatedFil
 			} else {
 				importFileContent = fs.readFileSync(srcFile, constants.UTF8)
 			}
-			const importObjs = await findAllImportPaths(dir, importFileContent)
-			importFileContent = changeRelativePathToAbsolute(importFileContent, srcFile, importObjs)
+			importFileContent = await changeRelativePathToAbsolute(dir, importFileContent)
 
 			if (importFileContent.includes(constants.IS)) {
 				flattenFileContent = updatedFileContent.replace(importStatement, importFileContent)

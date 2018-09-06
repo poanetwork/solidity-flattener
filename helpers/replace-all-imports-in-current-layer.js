@@ -6,7 +6,7 @@ const findFile = require('./find-file')
 const replaceRelativeImportPaths = require('./replace-relative-import-paths')
 const updateImportObjectLocationInTarget = require('./update-import-object-location-in-target')
 const changeRelativePathToAbsolute = require('./change-relative-path-to-absolute')
-const findAllImportPaths = require('./find-all-import-paths')
+const cleanPath = require('./clean-path')
 const log = require('./logger')
 
 async function replaceAllImportsInCurrentLayer(i, importObjs, updatedFileContent, dir) {
@@ -49,8 +49,7 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 	if (fileExists) {
 		log.info(`### ${dependencyPath} SOURCE FILE WAS FOUND###`)
 		let importedFileContent = fs.readFileSync(filePath, constants.UTF8)
-		const _importObjs = await findAllImportPaths(dir, importedFileContent)
-		importedFileContent = changeRelativePathToAbsolute(importedFileContent, filePath, _importObjs)
+		importedFileContent = await changeRelativePathToAbsolute(dir, importedFileContent)
 		const importedFileContentUpdated = await replaceRelativeImportPaths(importedFileContent, path.dirname(dependencyPath) + constants.SLASH)
 		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
 			importedSrcFiles[fileBaseName] = importedFileContentUpdated
@@ -80,23 +79,6 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 
 	i++
 	replaceAllImportsInCurrentLayerInner(i, importObjs, _updatedFileContent, dir, resolve)
-}
-
-
-function cleanPath(path) {
-	let cleanedPath
-	if (path.includes(constants.DIRTY_PATH)) {
-		const re = new RegExp(constants.DIRTY_PATH, 'g')
-		cleanedPath = path.replace(re, constants.SLASH)
-	} else {
-		cleanedPath = path
-	}
-
-	if (cleanedPath.includes(constants.DIRTY_PATH)) {
-		return cleanPath(cleanedPath)
-	} else {
-		return cleanedPath
-	}
 }
 
 module.exports = replaceAllImportsInCurrentLayer

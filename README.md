@@ -1,4 +1,7 @@
-## Solidity flat file generation
+# Solidity flat file generation
+
+[![Known Vulnerabilities](https://snyk.io/test/github/poanetwork/solidity-flattener/badge.svg)](https://snyk.io/test/github/poanetwork/solidity-flattener)
+[![Coverage Status](https://coveralls.io/repos/github/poanetwork/solidity-flattener/badge.svg?branch=master)](https://coveralls.io/github/poanetwork/solidity-flattener?branch=master)
 
 ##### Combines all local imports to one .sol file
 

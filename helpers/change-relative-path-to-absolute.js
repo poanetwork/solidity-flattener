@@ -1,16 +1,19 @@
 const constants = require('./constants')
+const cleanPath = require('./clean-path')
 
 /*
  * Replaces relative paths to absolute path for imports
  */
-function changeRelativePathToAbsolute(fileContent, srcFile, importObjs) {
+async function changeRelativePathToAbsolute(dir, fileContent) {
 	let fileContentNew = fileContent
+	const findAllImportPaths = require('./find-all-import-paths')
+	const importObjs = await findAllImportPaths(dir, fileContent)
 	importObjs.forEach((importObj) => {
 		let isAbsolutePath = !importObj.dependencyPath.startsWith(constants.DOT)
 		if (!isAbsolutePath) {
 			const { dependencyPath, fullImportStatement } = importObj
-			const srcFileDir = srcFile.substring(0, srcFile.lastIndexOf(constants.SLASH))
-			const dependencyPathNew = srcFileDir + constants.SLASH + dependencyPath
+			let dependencyPathNew = dir + constants.SLASH + dependencyPath
+			dependencyPathNew = cleanPath(dependencyPathNew)
 			let fullImportStatementNew = fullImportStatement.split(dependencyPath).join(dependencyPathNew)
 			fileContentNew = fileContentNew.split(fullImportStatement).join(fullImportStatementNew)
 		}
