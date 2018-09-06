@@ -1,5 +1,6 @@
 # Solidity flat file generation
 
+[![Build Status](https://travis-ci.org/poanetwork/solidity-flattener.svg?branch=master)](https://travis-ci.org/poanetwork/solidity-flattener)
 [![Known Vulnerabilities](https://snyk.io/test/github/poanetwork/solidity-flattener/badge.svg)](https://snyk.io/test/github/poanetwork/solidity-flattener)
 [![Coverage Status](https://coveralls.io/repos/github/poanetwork/solidity-flattener/badge.svg?branch=master)](https://coveralls.io/github/poanetwork/solidity-flattener?branch=master)
 
