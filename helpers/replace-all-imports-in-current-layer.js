@@ -19,34 +19,30 @@ async function replaceAllImportsInCurrentLayerInner(i, importObjs, updatedFileCo
 		return resolve(updatedFileContent)
 	}
 
-	// console.log(importObjs)
-	// console.log(dir)
 	let importObj = importObjs[i]
-	importObj = updateImportObjectLocationInTarget(importObj, updatedFileContent)
-	const { alias, contractName, startIndex, endIndex } = importObj
-	let { dependencyPath } = importObj
 	const { importedSrcFiles } = variables
 	let _updatedFileContent
 
 	//replace contracts aliases
-	if (contractName) {
-		_updatedFileContent = updatedFileContent.replace(alias + constants.DOT, contractName + constants.DOT)
+	if (importObj.contractName) {
+		_updatedFileContent = updatedFileContent.replace(importObj.alias + constants.DOT, importObj.contractName + constants.DOT)
 	} else {
 		_updatedFileContent = updatedFileContent
 	}
 
+	let { dependencyPath } = importObj
 	dependencyPath = cleanPath(dependencyPath)
 	let isAbsolutePath = !dependencyPath.startsWith(constants.DOT)
 	let filePath = isAbsolutePath ? dependencyPath : (dir + dependencyPath)
 	filePath = cleanPath(filePath)
 
-	const importStatement = updatedFileContent.substring(startIndex, endIndex)
+	importObj = updateImportObjectLocationInTarget(importObj, _updatedFileContent)
+	const importStatement = _updatedFileContent.substring(importObj.startIndex, importObj.endIndex)
 	const fileBaseName = path.basename(filePath)
 	const fileExists = fs.existsSync(filePath, fs.F_OK)
 	if (fileExists) {
 		log.info(`${filePath} SOURCE FILE WAS FOUND`)
 		const importedFileContentUpdated = await changeRelativePathToAbsolute(filePath)
-		//const importedFileContentUpdated = await replaceRelativeImportPaths(path.dirname(dependencyPath) + constants.SLASH, importedFileContent)
 		if (!importedSrcFiles.hasOwnProperty(fileBaseName)) {
 			importedSrcFiles[fileBaseName] = importedFileContentUpdated
 			if (importedFileContentUpdated.includes(constants.IS)) {

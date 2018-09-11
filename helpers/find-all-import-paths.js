@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-let decomment = require('decomment')
+const decomment = require('decomment')
 const findFile = require('./find-file')
 const constants = require('./constants')
 
@@ -9,7 +9,6 @@ const constants = require('./constants')
  */
 function findAllImportPaths(dir, content) {
 	return new Promise(async (resolve) => {
-		//strip comments from content
 		content = decomment(content, {safe: true})
 		let allImports = []
 		const regex = new RegExp(constants.IMPORT,'gi')
