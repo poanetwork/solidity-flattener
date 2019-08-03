@@ -5,7 +5,7 @@ const variables = require('./helpers/variables')
 const log = require('./helpers/logger')
 const constants = require('./helpers/constants')
 const cleanPath = require('./helpers/clean-path')
-const removeDoubledSolidityVersion = require('./helpers/remove-doubled-solidity-version')
+const { removeDoubledSolidityVersion, getFirstPragma } = require('./helpers/remove-doubled-solidity-version')
 const replaceAllImportsRecursively = require('./helpers/replace-all-imports-recursively')
 
 flatten()
@@ -29,8 +29,10 @@ async function getSourceFiles(dir, path) {
 }
 
 async function replaceImports(inputFileContent, dir) {
+	const { pragma: firstPragma } = getFirstPragma(inputFileContent)
 	let outputFileContent = await replaceAllImportsRecursively(inputFileContent, dir)
 	outputFileContent = removeDoubledSolidityVersion(outputFileContent)
+	outputFileContent = firstPragma + outputFileContent
 	if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir)
 	const fileName = `${variables.flatContractPrefix}_flat.sol`
 	const filePath = `${variables.outDir}/${fileName}`

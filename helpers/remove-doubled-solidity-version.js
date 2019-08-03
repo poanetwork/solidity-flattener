@@ -1,26 +1,37 @@
-const constants = require('./constants')
+const { SEMICOLON, EMPTY } = require('./constants')
+const pragmaSubstr = 'pragma solidity'
 
 /*
- * Leaves only 1st pragma solidity instruction and removes others
+ * Removes all pragma solidity instruction
  */
 function removeDoubledSolidityVersion(content) {
-	const subStr = 'pragma solidity'
 	//1st pragma solidity declaration
-	const firstIndex = content.indexOf(subStr)
-	const lastIndex = firstIndex + content.substr(firstIndex).indexOf(constants.SEMICOLON) + 1
+	const { firstIndex, lastIndex } = getFirstPragma(content)
 	const contentPart = content.substr(lastIndex)
 	let contentFiltered = contentPart
 	//remove other pragma solidity declarations
-	const regex = new RegExp(subStr,'gi')
+	const regex = new RegExp(pragmaSubstr,'gi')
 	let result
 	while ( (result = regex.exec(contentPart)) ) {
 		const start = result.index
-		const end = start + contentPart.substr(start).indexOf(constants.SEMICOLON) + 1
-		if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), constants.EMPTY)
+		const end = start + contentPart.substr(start).indexOf(SEMICOLON) + 1
+		if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), EMPTY)
 	}
-	const finalContent = content.substr(0, lastIndex) + contentFiltered
 
-	return finalContent
+	return contentFiltered
 }
 
-module.exports = removeDoubledSolidityVersion
+/*
+ * Gets 1st pragma solidity instruction from content
+ */
+function getFirstPragma(content) {
+	const firstIndex = content.indexOf(pragmaSubstr)
+	const lastIndex = firstIndex + content.substr(firstIndex).indexOf(SEMICOLON) + 1
+	const pragma = content.substr(0, lastIndex)
+	return { pragma, firstIndex, lastIndex}
+}
+
+module.exports = {
+	removeDoubledSolidityVersion,
+	getFirstPragma,
+}
