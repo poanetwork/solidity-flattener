@@ -1,11 +1,22 @@
-# Solidity flat file generation
+# Solidity smart-contract flattened source file generation
 
 [![Build Status](https://travis-ci.org/poanetwork/solidity-flattener.svg?branch=master)](https://travis-ci.org/poanetwork/solidity-flattener)
 [![Known Vulnerabilities](https://snyk.io/test/github/poanetwork/solidity-flattener/badge.svg)](https://snyk.io/test/github/poanetwork/solidity-flattener)
 [![Coverage Status](https://coveralls.io/repos/github/poanetwork/solidity-flattener/badge.svg?branch=master)](https://coveralls.io/github/poanetwork/solidity-flattener?branch=master)
 
-##### Combines all local imports to one .sol file
+## Utility to combine all imports to one flatten .sol file
 
+### Installation from npm
+
+`npm i @poanet/solidity-flattener`
+
+### Usage
+
+`./node_modules/.bin/poa-solidity-flattener ./contracts/example.sol`
+
+It will save flattened source of Solidity smart-contract into `./out` directory
+
+### Installation from source
 
 
 ```
