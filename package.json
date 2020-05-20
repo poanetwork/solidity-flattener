@@ -29,14 +29,14 @@
     "node": "6.10.1"
   },
   "bugs": {
-    "url": "/issues"
+    "url": "https://github.com/poanetwork/solidity-flattener/issues"
   },
   "main": "index.js",
   "devDependencies": {
     "coveralls": "^3.0.2",
     "eslint": "^5.5.0",
     "istanbul": "^0.4.5",
-    "mocha": "^5.2.0",
+    "mocha": "^7.1.2",
     "mocha-lcov-reporter": "^1.3.0"
   }
 }
