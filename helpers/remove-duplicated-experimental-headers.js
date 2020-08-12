@@ -7,18 +7,21 @@ const pragmaExperimentalstr = 'pragma experimental'
 function removeDuplicatedExpHeaders(content) {
     //1st pragma solidity declaration
     const { firstIndex, lastIndex } = getFirstPragmaExp(content)
-    const contentPart = content.substr(lastIndex)
-    let contentFiltered = contentPart
-    //remove other pragma solidity declarations
-    const regex = new RegExp(pragmaExperimentalstr,'gi')
-    let result
-    while ( (result = regex.exec(contentPart)) ) {
-        const start = result.index
-        const end = start + contentPart.substr(start).indexOf(SEMICOLON) + 1
-        if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), EMPTY)
+    if (firstIndex >= 0 && lastIndex > 0) {
+        const contentPart = content.substr(lastIndex)
+        let contentFiltered = contentPart
+        //remove other pragma solidity declarations
+        const regex = new RegExp(pragmaExperimentalstr,'gi')
+        let result
+        while ( (result = regex.exec(contentPart)) ) {
+            const start = result.index
+            const end = start + contentPart.substr(start).indexOf(SEMICOLON) + 1
+            if (start != firstIndex) contentFiltered = contentFiltered.replace(contentPart.substring(start, end), EMPTY)
+        }
+        return contentFiltered
+    } else {
+        return content
     }
-
-    return contentFiltered
 }
 
 /*
