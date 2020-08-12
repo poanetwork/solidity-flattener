@@ -1,6 +1,6 @@
 {
   "name": "@poanet/solidity-flattener",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Combine solidity files to one flat file",
   "scripts": {
     "start": "node index.js",
