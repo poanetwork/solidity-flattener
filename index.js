@@ -5,9 +5,12 @@ const variables = require('./helpers/variables')
 const log = require('./helpers/logger')
 const constants = require('./helpers/constants')
 const cleanPath = require('./helpers/clean-path')
-const { removeDoubledSolidityVersion, getFirstPragma } = require('./helpers/remove-doubled-solidity-version')
-const { removeDuplicatedExpHeaders, getFirstPragmaExp } = require('./helpers/remove-duplicated-experimental-headers')
 const replaceAllImportsRecursively = require('./helpers/replace-all-imports-recursively')
+const {
+	deduplicateSolidityVersoins,
+	deduplicateSolidityExpHeaders,
+	deduplicateLicenses
+} = require('./helpers/deduplicate-lines')
 
 flatten()
 
@@ -30,14 +33,12 @@ async function getSourceFiles(dir, path) {
 }
 
 async function replaceImports(inputFileContent, dir) {
-	const { pragma: firstPragma } = getFirstPragma(inputFileContent)
-	let { pragmaExp: firstPragmaExp } = getFirstPragmaExp(inputFileContent)
-
 	let outputFileContent = await replaceAllImportsRecursively(inputFileContent, dir)
-	outputFileContent = removeDoubledSolidityVersion(outputFileContent)
-	outputFileContent = removeDuplicatedExpHeaders(outputFileContent)
-	firstPragmaExp = removeDoubledSolidityVersion(firstPragmaExp)
-	outputFileContent = firstPragma + firstPragmaExp + outputFileContent
+
+	outputFileContent = deduplicateLicenses(outputFileContent)
+	outputFileContent = deduplicateSolidityVersoins(outputFileContent)
+	outputFileContent = deduplicateSolidityExpHeaders(outputFileContent)
+
 	if (!fs.existsSync(variables.outDir)) fs.mkdirSync(variables.outDir)
 	const fileName = `${variables.flatContractPrefix}_flat.sol`
 	const filePath = `${variables.outDir}/${fileName}`
