@@ -1,6 +1,6 @@
 {
   "name": "@poanet/solidity-flattener",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "Combine solidity files to one flat file",
   "scripts": {
     "start": "node index.js",
@@ -26,7 +26,7 @@
     "path": "^0.12.7"
   },
   "engines": {
-    "node": "^12"
+    "node": "^16"
   },
   "bugs": {
     "url": "https://github.com/poanetwork/solidity-flattener/issues"
