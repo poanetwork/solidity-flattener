@@ -11,6 +11,7 @@ const {
 	deduplicateSolidityExpHeaders,
 	deduplicateLicenses
 } = require('./helpers/deduplicate-lines')
+const enforceLineEndingStyle = require('./helpers/enforce-line-ending-style')
 
 flatten()
 
@@ -35,6 +36,7 @@ async function getSourceFiles(dir, path) {
 async function replaceImports(inputFileContent, dir) {
 	let outputFileContent = await replaceAllImportsRecursively(inputFileContent, dir)
 
+	outputFileContent = enforceLineEndingStyle(outputFileContent)
 	outputFileContent = deduplicateLicenses(outputFileContent)
 	outputFileContent = deduplicateSolidityVersoins(outputFileContent)
 	outputFileContent = deduplicateSolidityExpHeaders(outputFileContent)
