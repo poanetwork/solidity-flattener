@@ -14,12 +14,12 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16, 18]
+        node-version: [14, 16, 18]
 
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install, test
@@ -34,9 +34,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
-        node-version: '12.x'
+        node-version: '18.x'
     - name: Install and check codestyle
       run: |
         npm install
